@@ -1,11 +1,11 @@
 var express = require('express');
-var jsdomCaller = require('./jsdomCaller.js');
+var inspector = require('./inspector.js');
 
 var app = express();
 var domain = "https://www.expatriates.com/";
 
 app.get('/', function(req, res) {
-    jsdomCaller.call(domain, parseHome);
+    inspector.call(domain, parseHome);
     res.send("OK");
 });
 
@@ -20,8 +20,7 @@ function parseHome($) {
     });
     console.log('found ' + lists.length + ' lists');
     lists.each(function(i, listUrl) {
-        // console.log('parsing list: ', listUrl);
-        jsdomCaller.call(domain + listUrl, parseList);
+        inspector.call(domain + listUrl, parseList);
 
         // TODO handle paging
         // listUrl + n * (100) where n = 1 until we got zero results
@@ -34,13 +33,8 @@ function parseList($) {
     });
     console.log('found ' + posts.length + ' posts');
     posts.each(function(i, postUrl) {
-        // console.log('parsing post: ', postUrl);
-        jsdomCaller.call(domain + postUrl, function(x) {
-
-        });
+        inspector.call(domain + postUrl, parsePost);
     });
 }
 
-function parsePost($) {
-
-}
+function parsePost($) {}
