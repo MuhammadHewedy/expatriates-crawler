@@ -13,7 +13,6 @@ app.listen(3000, function() {
     console.log('Example app listening on port 3000!');
 });
 
-
 function parseHome($) {
     var lists = $('.categories li a').map(function(a) {
         return $(this).attr('href');
@@ -37,4 +36,6 @@ function parseList($) {
     });
 }
 
-function parsePost($) {}
+function parsePost($) {
+    // TODO
+}
