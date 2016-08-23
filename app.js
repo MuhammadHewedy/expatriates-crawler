@@ -57,9 +57,13 @@ function parsePost($, cbParams) {
 
     postObj.phone = $('.posting-phone a').text();
     postObj.desc = $('.post-body').text().trim();
-    postObj.imgs = $('.posting-images img').map(function() {
-        return $(this).attr('src');
+    $('.posting-images img').each(function(i) {
+        postObj["img_" + i] = $(this).attr('src');
     });
 
-    cbParams.mongoDb.collection('posts').insertOne(postObj);
+    cbParams.mongoDb.collection('posts').insertOne(postObj, function(err, result) {
+        if (err) {
+            console.log(err);
+        }
+    });
 }
