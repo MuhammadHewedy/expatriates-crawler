@@ -46,11 +46,20 @@ function parseList($, cbParams) {
 }
 
 function parsePost($, cbParams) {
-    var title = $('title').text();
-    var db = cbParams.mongoDb;
+    var postObj = {};
 
-    var titlesCollect = db.collection('titles');
-    titlesCollect.insertOne({
-        title: title
+    postObj.title = $('.container h1').text().trim();
+
+    $('.no-bullet li:has(strong)').each(function(i) {
+        var kv = $(this).text().split(':');
+        postObj[kv[0].toLowerCase()] = kv[1];
     });
+
+    postObj.phone = $('.posting-phone a').text();
+    postObj.desc = $('.post-body').text().trim();
+    postObj.imgs = $('.posting-images img').map(function() {
+        return $(this).attr('src');
+    });
+
+    cbParams.mongoDb.collection('posts').insertOne(postObj);
 }
