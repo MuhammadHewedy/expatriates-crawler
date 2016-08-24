@@ -10,9 +10,7 @@ var mongoUrl = 'mongodb://localhost:27017/expatriates';
 app.get('/', function(req, res) {
 
     MongoClient.connect(mongoUrl, function(err, db) {
-        inspector.call(domain, parseHome, {
-            mongoDb: db
-        });
+        inspector.call(domain, parseHome, {mongoDb: db});
         // TODO close db
     });
     res.send("OK");
