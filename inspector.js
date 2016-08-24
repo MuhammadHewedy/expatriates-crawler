@@ -1,7 +1,6 @@
 var cheerio = require('cheerio');
 var request = require('request');
 
-var sCount = 0;
 
 var call = function(url, callback, cbParams) {
     request({
@@ -13,11 +12,10 @@ var call = function(url, callback, cbParams) {
         if (!error) {
             var $ = cheerio.load(html);
             callback($, cbParams);
-            sCount++;
         } else {
+            console.log(error.code, ' for url: ', url);
             call(url, callback, cbParams);
         }
-        console.log('success: ', sCount);
     });
 };
 

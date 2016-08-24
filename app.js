@@ -17,7 +17,6 @@ function parseHome($, cbParams) {
     var lists = $('.categories li a').map(function(a) {
         return $(this).attr('href');
     });
-    console.log('found ' + lists.length + ' lists');
     lists.each(function(i, listUrl) {
         cbParams.listUrl = listUrl;
         inspector.call(domain + listUrl, parseList, cbParams);
@@ -28,7 +27,10 @@ function parseList($, cbParams) {
     var posts = $('.main-content li > a').map(function(a) {
         return $(this).attr('href');
     });
-    console.log('found ' + posts.length + ' posts');
+
+    if (posts.length === 0) {
+        console.log('0 posts for: ' + cbParams.listUrl);
+    }
     posts.each(function(i, postUrl) {
         inspector.call(domain + postUrl, parsePost, cbParams);
     });
@@ -37,7 +39,6 @@ function parseList($, cbParams) {
     if (($('.pagination a.active').text() || 0) == 1) { // in the landing page of the list
         var toPage = $('.pagination a:nth-last-child(2)').text() || 0;
         if (toPage > 1) {
-            console.log('found ' + toPage + ' pages for list ' + cbParams.listUrl);
             for (var i = 1; i < toPage; i++) {
                 inspector.call(domain + cbParams.listUrl + "/index" + i * 100 + ".html", parseList, cbParams);
             }
