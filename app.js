@@ -7,32 +7,36 @@ var domain = "https://www.expatriates.com/";
 var mongoUrl = 'mongodb://localhost:27017/expatriates';
 
 MongoClient.connect(mongoUrl, function(err, db) {
-    inspector.call(domain, parseHome, {
-        mongoDb: db
-    });
+    inspector.call(domain, parseHome, { db: db });
     // TODO close db
 });
 
 function parseHome($, cbParams) {
-    var lists = $('.categories li a').map(function(a) {
+    var lists = $('.categories li a').map(function(i) {
         return $(this).attr('href');
     });
+	
+	console.log('found ' + lists.length + ' lists');
+	
     lists.each(function(i, listUrl) {
-        cbParams.listUrl = listUrl;
-        inspector.call(domain + listUrl, parseList, cbParams);
+		var newCbParams = extend(cbParams, {listNo : i, listUrl: listUrl});
+        inspector.call(domain + listUrl, parseList, newCbParams);
     });
 }
 
 function parseList($, cbParams) {
-    var posts = $('.main-content li > a').map(function(a) {
+	console.log('parsing list #' + cbParams.listNo + ' with url: ' + cbParams.listUrl);
+	
+    var posts = $('.main-content li > a').map(function(i) {
         return $(this).attr('href');
     });
 
     if (posts.length === 0) {
-        console.log('0 posts for: ' + cbParams.listUrl);
+        console.log('ERROR: 0 posts for: ' + cbParams.listUrl);
     }
     posts.each(function(i, postUrl) {
-        inspector.call(domain + postUrl, parsePost, cbParams);
+		var newCbParams = extend(cbParams, {postNo: i, postUrl: postUrl});
+        inspector.call(domain + postUrl, parsePost, newCbParams);
     });
 
     // paging
@@ -40,13 +44,16 @@ function parseList($, cbParams) {
         var toPage = $('.pagination a:nth-last-child(2)').text() || 0;
         if (toPage > 1) {
             for (var i = 1; i < toPage; i++) {
-                inspector.call(domain + cbParams.listUrl + "/index" + i * 100 + ".html", parseList, cbParams);
+				var newCbParams = extend(cbParams, {listUrl: cbParams.listUrl + "/index" + i * 100 + ".html"});
+                inspector.call(domain + newCbParams.listUrl, parseList, newCbParams);
             }
         }
     }
 }
 
 function parsePost($, cbParams) {
+	console.log('parsing post #' + cbParams.postNo + ' with url: ' + cbParams.postUrl + ' of listUrl: ' + cbParams.listUrl);
+	
     var postObj = {};
 
     postObj.title = $('.container h1').text().trim();
@@ -62,9 +69,20 @@ function parsePost($, cbParams) {
         postObj["img_" + i] = $(this).attr('src');
     });
 
-    cbParams.mongoDb.collection('posts').insertOne(postObj, function(err, result) {
+    cbParams.db.collection('posts').insertOne(postObj, function(err, result) {
         if (err) {
             console.log(err);
         }
     });
+}
+
+function extend(o, propsObj){
+	var newO = {};
+	Object.keys(o).forEach(function(key){
+		newO[key] = o[key];
+	});
+	Object.keys(propsObj).forEach(function(key){
+		newO[key] = propsObj[key];
+	});
+	return newO;
 }
