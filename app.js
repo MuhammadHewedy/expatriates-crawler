@@ -11,6 +11,12 @@ MongoClient.connect(mongoUrl, function(err, db) {
     // TODO close db
 });
 
+process.on('SIGINT', function () {
+	console.log(inspector.errorCodes);
+	process.exit();
+});
+
+
 function parseHome($, cbParams) {
     var lists = $('.categories li a').map(function(i) {
         return $(this).attr('href');
