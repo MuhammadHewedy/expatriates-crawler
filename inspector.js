@@ -17,15 +17,25 @@ var call = function(url, callback, cbParams) {
 			pushUnique(successLinks, url);
         } else {
 			++err;
-			pushUnique(errorCodes, error.code);
+			pushUnique(errorCodes, error.code, 'code', {code: error.code, sampleResponse: html});
             call(url, callback, cbParams);
         }
 		console.log('success: ' + success + ', error: ' + err + ', no of success links: ' + successLinks.length);
     });
 };
 
-function pushUnique(array, value){
-	array.indexOf(value) < 0 && array.push(value);
+function pushUnique(array, valueToCheck, propToCheck, valueToPush){
+
+	var exists;
+	if (valueToPush){
+		exists = array.some(function(e){
+			return e[propToCheck] === valueToCheck;
+		})	
+	}else{
+		exists = array.indexOf(valueToCheck) > -1;
+	}
+	
+	!exists && (array.push(valueToPush || valueToCheck));
 }
 
 module.exports.call = call;
