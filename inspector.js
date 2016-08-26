@@ -1,5 +1,6 @@
 var cheerio = require('cheerio');
 var request = require('request');
+var myUtil = require('./util');
 
 var success = 0, err = 0, successLinks = [], errorCodes = [];
 
@@ -11,32 +12,34 @@ var call = function(url, callback, cbParams) {
         "url": url
     }, function(error, response, html) {
         if (!error) {
+        	++success;
             var $ = cheerio.load(html);
             callback($, cbParams);
-			++success;
-			pushUnique(successLinks, url);
+			successLinks.indexOf(url) < 0 && successLinks.push(url);
         } else {
 			++err;
-			pushUnique(errorCodes, error.code, 'code', {code: error.code, sampleResponse: html});
-            call(url, callback, cbParams);
+            //call(url, callback, cbParams);
+            saveErrors(error, html);
         }
 		console.log('success: ' + success + ', error: ' + err + ', no of success links: ' + successLinks.length);
     });
 };
 
-function pushUnique(array, valueToCheck, propToCheck, valueToPush){
+function saveErrors(error, html) {
+	var exitedError = errorCodes.find(function(o) {
+		return o.code == error.code;
+	});
 
-	var exists;
-	if (valueToPush){
-		exists = array.some(function(e){
-			return e[propToCheck] === valueToCheck;
-		})	
-	}else{
-		exists = array.indexOf(valueToCheck) > -1;
+	if (exitedError) {
+		++exitedError.frequency;
+	} else {
+		errorCodes.push({
+			code : error.code,
+			frequency : 1,
+			sampleResponse : html
+		});
 	}
-	
-	!exists && (array.push(valueToPush || valueToCheck));
 }
 
 module.exports.call = call;
-module.exports.errorCodes = errorCodes;
+module.exports.errors = errorCodes;
